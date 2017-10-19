@@ -28,21 +28,23 @@ FifoBuffer usartTxFifo =
 };
 
 ///////////[Functions]//////////////////////////////////////////////////////////////////////////////
-void initUSART(void)
+void usartInit(void)
 {
 	UCSRA
 	=	0x00;
 	
 	UCSRB
-	=	0x00;
+	=	(1<<RXCIE)
+	|	(1<<RXEN)
+	|	(1<<TXEN);
 	
 	UCSRC
 	=	(1<<URSEL)		//Allow writing to UCSRC instead of UBRRH
 	|	(3<<UCSZ0);		//8-bit, 1 stop bit
 	
 	UBRRL
-	=	1;				//250kbps @ 8.00MHz
-	//= 207;			//2400bps @ 8.00MHz
+	//=	1;				//250kbps @ 8.00MHz
+	=	207;			//2400bps @ 8.00MHz
 
 }
 

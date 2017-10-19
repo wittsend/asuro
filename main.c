@@ -9,11 +9,18 @@
 #include <avr/io.h>
 #include "usart.h"
 
+void setup(void)
+{
+	usartInit();
+}
+
 int main(void)
 {
     /* Replace with your application code */
     while (1) 
     {
+
+		usartTransmitWriteBuffer();
     }
 }
 

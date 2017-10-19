@@ -19,7 +19,7 @@
 
 
 ///////////[Functions]//////////////////////////////////////////////////////////////////////////////
-void initUSART(void);
+void usartInit(void);
 uint8_t usartBufferWrite(uint8_t byte);
 uint8_t usartBufferRead(uint8_t *byte);
 uint8_t usartTransmitWriteBuffer(void);
