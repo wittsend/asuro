@@ -6,14 +6,15 @@
  */ 
 
 ///////////[Includes]///////////////////////////////////////////////////////////////////////////////
-//#include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "adc.h"
 
 //////////////[Global variables]////////////////////////////////////////////////////////////////////
 volatile uint8_t adcCurrentChannel;
-volatile uint8_t adcNewDataFlag = 0;		//1 When new data, otherwise 0
+volatile uint8_t adcNewDataFlag = 0;		//Each bit represents if there is new data on said
+											//adc channel
+volatile uint8_t adcEnabledChannels = 0x1F;	//What ADC channels are enabled for sampling
 volatile uint16_t adcData[ADC_CHANNELS];	//Stores data from each ADC channel
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
@@ -35,11 +36,11 @@ void adcInit(void)
 }
 
 //Tells the calling function whether or not new data is available to be read from the ADC driver
-uint8_t adcNewData(void)
+uint8_t adcNewData(uint8_t channel)
 {
-	if(adcNewDataFlag)
+	if(adcNewDataFlag & (1<<channel))
 	{
-		adcNewDataFlag = 0;
+		adcNewDataFlag &= ~(1<<channel);
 		return 1;
 	} else
 	return 0;
@@ -56,40 +57,17 @@ uint16_t adcGetData(uint8_t channel)
 //ADC conversion complete interrupt
 ISR(ADC_vect)
 {
-	//Don't constantly interrupt the code. Only perform a read when the last data has been read.
-	if(!adcNewDataFlag)
-	{
-		adcData[adcCurrentChannel] = adcLastSample;	//Fetch the last sample and store it in the
+	adcData[adcCurrentChannel] = adcLastSample;		//Fetch the last sample and store it in the
 													//array
-		
-		switch(adcCurrentChannel)					//Switch to the next ADC mux channel to read
+	adcNewDataFlag |= (1<<adcCurrentChannel);		//Update data flag for this channel
+	if(adcEnabledChannels)							//If at least one ADC channel is enabled
+	{
+		do											//Look for next enabled channel
 		{
-			case ADC_ODO_R_CH:
-				adcCurrentChannel = ADC_ODO_L_CH;
-				break;
-			
-			case ADC_ODO_L_CH:
-				adcCurrentChannel = ADC_LINE_R_CH;
-				break;
-
-			case ADC_LINE_R_CH:
-				adcCurrentChannel = ADC_LINE_L_CH;
-				break;
-
-			case ADC_LINE_L_CH:
-				adcCurrentChannel = ADC_COL_SW_CH;
-				break;
-
-			case ADC_COL_SW_CH:
-				adcCurrentChannel = ADC_BATTERY_CH;
-				break;
-			
-			case ADC_BATTERY_CH:
-				adcCurrentChannel = ADC_ODO_R_CH;
-				adcNewDataFlag = 1;					//If all ADC channels have been sampled, then
-				break;								//indicate that new data is available.
-		}
-		adcSetChannel(adcCurrentChannel);			//Set the ADC mux channel
+			adcCurrentChannel = (adcCurrentChannel + 1) % ADC_CHANNELS;
+		} while (!(adcEnabledChannels & (1<<adcCurrentChannel)));
+		
+		adcSetChannel(adcCurrentChannel);			//When found, set the ADC mux channel		
 	}
 	adcStartConv;									//Start the next conversion.
 }

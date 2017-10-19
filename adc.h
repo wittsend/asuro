@@ -54,7 +54,7 @@
 void adcInit(void);
 
 //Tells the calling function whether or not new data is available to be read from the ADC driver
-uint8_t adcNewData(void);
+uint8_t adcNewData(uint8_t channel);
 
 //Will return the data last sampled from the given ADC channel
 uint16_t adcGetData(uint8_t channel);

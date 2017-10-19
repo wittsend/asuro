@@ -7,15 +7,25 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include <stdio.h>
+
 #include "setup.h"
+#include "usart.h"
+#include "battery.h"
 
 int main(void)
 {
+	char debugString[32];
 	setup();
     while (1) 
     {
-
+		if(!updateBattery())
+		{
+			sprintf(debugString, "Raw Battery: %4i", getBatteryVoltage());
+			usartWriteString(debugString);
+		}
 		usartTransmitWriteBuffer();
+		
     }
 }
 

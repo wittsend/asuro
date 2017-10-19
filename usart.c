@@ -7,7 +7,6 @@
 
 ///////////[Includes]///////////////////////////////////////////////////////////////////////////////
 #include <avr/interrupt.h>
-//#include <stdint.h>
 #include "fifo.h"
 #include "usart.h"
 
@@ -91,14 +90,14 @@ uint8_t usartTransmitWriteBuffer(void)
 //Write a string to the TX FIFO buffer
 uint8_t usartWriteString(char *string)
 {
-	for(uint8_t i = 0; string[i]; i++)
+	for(uint8_t i = 0; string[i]; i++)			//Keep looping until a NULL is seen in the string
 	{
-		if(fifoPut(&usartTxFifo, string[i]))
+		if(fifoPut(&usartTxFifo, string[i]))	//Place next char in the TX FIFO
 		{
-			return 1;
+			return 1;							//If FIFO is full return 1
 		}
 	}
-	return 0;
+	return 0;									//If successful, then return 0
 }
 
 //Transmit a byte on the UART

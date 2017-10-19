@@ -7,6 +7,8 @@
 
 ///////////[Includes]///////////////////////////////////////////////////////////////////////////////
 #include <stdint.h>
+#include <avr/interrupt.h>
+#include "timer.h"
 #include "adc.h"
 #include "usart.h"
 #include "setup.h"
@@ -14,6 +16,8 @@
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
 void setup(void)
 {
+	timerInit();
 	usartInit();
 	adcInit();
+	sei();
 }
