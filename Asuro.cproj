@@ -131,6 +131,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="adc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="adc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="fifo.c">
       <SubType>compile</SubType>
     </Compile>
@@ -138,6 +144,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="setup.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="setup.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usart.c">

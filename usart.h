@@ -10,13 +10,12 @@
 #define USART_H_
 
 ///////////[Defines]////////////////////////////////////////////////////////////////////////////////
-#define USART_TX_BUFFER_SZ	33
-#define USART_RX_BUFFER_SZ	33
+#define USART_TX_BUFFER_SZ		33
+#define USART_RX_BUFFER_SZ		9
 
 #define usartTxReg				UDR
 #define usartRxReg				UDR
 #define usartDataRegEmpty		(UCSRA & (1<<UDRE))
-
 
 ///////////[Functions]//////////////////////////////////////////////////////////////////////////////
 void usartInit(void);

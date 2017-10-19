@@ -7,16 +7,11 @@
 
 #include <stdint.h>
 #include <avr/io.h>
-#include "usart.h"
-
-void setup(void)
-{
-	usartInit();
-}
+#include "setup.h"
 
 int main(void)
 {
-    /* Replace with your application code */
+	setup();
     while (1) 
     {
 

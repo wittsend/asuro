@@ -7,6 +7,7 @@
 
 ///////////[Includes]///////////////////////////////////////////////////////////////////////////////
 #include <avr/interrupt.h>
+//#include <stdint.h>
 #include "fifo.h"
 #include "usart.h"
 
@@ -109,7 +110,7 @@ uint8_t usartTransmit(uint8_t byte)
 }
 
 //UART Receive complete interrupt
-SIGNAL(USART_RXC_vect)
+ISR(USART_RXC_vect)
 {
 	//Load into the FIFO
 	fifoPut(&usartRxFifo, usartRxReg);
