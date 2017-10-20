@@ -9,6 +9,7 @@
 #ifndef BATTERY_H_
 #define BATTERY_H_
 
+#include "adc.h"
 //////////////[Type Definitions]////////////////////////////////////////////////////////////////////
 typedef struct BatteryData
 {
@@ -16,6 +17,8 @@ typedef struct BatteryData
 	float conversionFactor;
 	uint16_t rawData;
 	uint16_t voltage;
+	uint32_t lastPollTime;
+	uint16_t pollInterval;
 } BatteryData;
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////

@@ -7,11 +7,13 @@
 
 ///////////[Includes]///////////////////////////////////////////////////////////////////////////////
 #include <stdint.h>
+#include <avr/io.h>
 #include <avr/interrupt.h>
 #include "timer.h"
 #include "adc.h"
 #include "usart.h"
 #include "odometer.h"
+#include "motor.h"
 #include "setup.h"
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
@@ -19,7 +21,8 @@ void setup(void)
 {
 	timerInit();
 	usartInit();
-	adcInit();
 	odoInit();
+	adcInit();
+	motorInit();
 	sei();
 }
