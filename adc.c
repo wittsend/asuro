@@ -25,7 +25,7 @@ void adcInit(void)
 	=	(0x01<<REFS0);
 	//=	0x00;					//Voltage reference selection. (AREF)
 	
-	adcCurrentChannel = ADC_ODO_R_CH;
+	adcCurrentChannel = ADC_ODO_R;
 	adcSetChannel(adcCurrentChannel);
 	
 	ADCSRA
@@ -36,7 +36,7 @@ void adcInit(void)
 }
 
 //Tells the calling function whether or not new data is available to be read from the ADC driver
-uint8_t adcNewData(uint8_t channel)
+uint8_t adcNewData(AdcChannels channel)
 {
 	if(adcNewDataFlag & (1<<channel))
 	{
@@ -47,7 +47,7 @@ uint8_t adcNewData(uint8_t channel)
 }
 
 //Will return the data last sampled from the given ADC channel
-uint16_t adcGetData(uint8_t channel)
+uint16_t adcGetData(AdcChannels channel)
 {
 	if(channel >= ADC_CHANNELS)
 		return 0;
@@ -55,7 +55,7 @@ uint16_t adcGetData(uint8_t channel)
 }
 
 //Enable or disable an ADC channel
-void adcEnableChannel(uint8_t channel, uint8_t action)
+void adcEnableChannel(AdcChannels channel, uint8_t action)
 {
 	if(action == ADC_ENABLE)
 		adcEnabledChannels |= (1<<channel);

@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 #include <avr/io.h>
-#include <stdio.h>
+#include <stdio.h>		//sprintf
 
 #include "setup.h"
 #include "usart.h"
 #include "battery.h"
+
 
 int main(void)
 {

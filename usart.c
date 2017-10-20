@@ -13,6 +13,7 @@
 #include "battery.h"	//Comms
 
 ///////////[Global variables]///////////////////////////////////////////////////////////////////////
+//Initialise the receive FIFO buffer
 FifoBuffer usartRxFifo =
 {
 	.fifoSize = USART_RX_BUFFER_SZ,
@@ -21,6 +22,7 @@ FifoBuffer usartRxFifo =
 	.buffer[USART_RX_BUFFER_SZ] = 0
 };
 
+//Initialise the transmit FIFO buffer
 FifoBuffer usartTxFifo =
 {
 	.fifoSize = USART_TX_BUFFER_SZ,
@@ -46,8 +48,6 @@ void usartInit(void)
 	=	(1<<URSEL)		//Allow writing to UCSRC instead of UBRRH
 	|	(3<<UCSZ0);		//8-bit, 1 stop bit
 	
-
-
 	usartEnableRx;
 	usartEnableTx;
 	usartTransmit(0xFF);//Send something to reset TX complete
@@ -112,7 +112,7 @@ uint8_t usartWriteString(char *string)
 uint8_t usartTransmit(uint8_t byte)
 {
 	while(!usartDataRegEmpty);				//Wait for UDR register to empty
-	usartClearTxComp;
+	usartClearTxComp;						//Clear TC complete
 	usartTxReg = byte;						//Load byte into UDR
 	return 0;
 }
@@ -192,9 +192,9 @@ void usartInterpretCommand(void)
 ISR(USART_RXC_vect)
 {
 	//Load into the FIFO
-	if(usartTxComp)
-		fifoPut(&usartRxFifo, usartRxReg);
+	if(usartTxComp)			//If no transmission is taking place
+		fifoPut(&usartRxFifo, usartRxReg);	//Store byte in FIFO
 	else
-		usartRxReg;
+		usartRxReg;							//Otherwise discard echo
 }
 

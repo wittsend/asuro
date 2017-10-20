@@ -5,19 +5,11 @@
  *  Author: Fiona
  */ 
 
-
 #ifndef ADC_H_
 #define ADC_H_
 
 //////////////[Defines]/////////////////////////////////////////////////////////////////////////////
 ////Constants////
-//ADC channel defines
-#define ADC_ODO_R_CH			0x00
-#define ADC_ODO_L_CH			0x01
-#define ADC_LINE_R_CH			0x02
-#define ADC_LINE_L_CH			0x03
-#define ADC_COL_SW_CH			0x04
-#define ADC_BATTERY_CH			0x05
 
 //Number of ADC channels available
 #define ADC_CHANNELS			8
@@ -52,17 +44,29 @@
 #define ADC_ENABLE				1
 #define ADC_DISABLE				0
 
+/////////////[Type Definitions]/////////////////////////////////////////////////////////////////////
+//ADC channel defines
+typedef enum AdcChannels
+{
+	ADC_ODO_R			= 0x00,
+	ADC_ODO_L			= 0x01,
+	ADC_LINE_R			= 0x02,
+	ADC_LINE_L			= 0x03,
+	ADC_COL_SW			= 0x04,
+	ADC_BATTERY			= 0x05
+} AdcChannels;
+
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
 //Sets up the analogue to digital hardware
 void adcInit(void);
 
 //Tells the calling function whether or not new data is available to be read from the ADC driver
-uint8_t adcNewData(uint8_t channel);
+uint8_t adcNewData(AdcChannels channel);
 
 //Will return the data last sampled from the given ADC channel
-uint16_t adcGetData(uint8_t channel);
+uint16_t adcGetData(AdcChannels channel);
 
 //Enable or disable an ADC channel
-void adcEnableChannel(uint8_t channel, uint8_t action);
+void adcEnableChannel(AdcChannels channel, uint8_t action);
 
 #endif /* ADC_H_ */

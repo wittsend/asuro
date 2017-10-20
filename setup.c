@@ -11,6 +11,7 @@
 #include "timer.h"
 #include "adc.h"
 #include "usart.h"
+#include "odometer.h"
 #include "setup.h"
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
@@ -19,5 +20,6 @@ void setup(void)
 	timerInit();
 	usartInit();
 	adcInit();
+	odoInit();
 	sei();
 }

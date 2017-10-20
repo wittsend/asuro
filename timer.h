@@ -25,6 +25,6 @@
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
 void timerInit(void);
 void timerDelayMs(uint16_t timeMs);
-
+uint32_t timerGetTimestamp(void);
 
 #endif /* TIMER_H_ */

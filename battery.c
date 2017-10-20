@@ -13,14 +13,14 @@
 //////////////[Global variables]////////////////////////////////////////////////////////////////////
 BatteryData battery = 
 {
-	.adcChannel			= ADC_BATTERY_CH,
+	.adcChannel			= ADC_BATTERY,
 	.conversionFactor	= 11.891503267973
 };
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
 uint8_t batteryUpdate(void)
 {
-	if(adcNewData(ADC_BATTERY_CH))
+	if(adcNewData(ADC_BATTERY))
 	{
 		battery.rawData = adcGetData(battery.adcChannel);
 		battery.voltage = battery.rawData*battery.conversionFactor;

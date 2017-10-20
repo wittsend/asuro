@@ -12,7 +12,7 @@
 //////////////[Type Definitions]////////////////////////////////////////////////////////////////////
 typedef struct BatteryData
 {
-	uint8_t adcChannel;
+	AdcChannels adcChannel;
 	float conversionFactor;
 	uint16_t rawData;
 	uint16_t voltage;

@@ -37,6 +37,12 @@ void timerDelayMs(uint16_t timeMs)
 	while(systemTimestamp < (startTime + timeMs));
 }
 
+//Return the systemTimestamp
+uint32_t timerGetTimestamp(void)
+{
+	return systemTimestamp;
+}
+
 //Timer2 output compare interrupt
 ISR(TIMER2_COMP_vect)
 {
