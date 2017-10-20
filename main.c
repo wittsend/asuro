@@ -19,11 +19,14 @@ int main(void)
 	setup();
     while (1) 
     {
-		if(!updateBattery())
+		if(0)
 		{
-			sprintf(debugString, "Raw Battery: %4i", getBatteryVoltage());
+			sprintf(debugString, " Raw Battery: %4i \r\n", batteryGetVoltage());
 			usartWriteString(debugString);
 		}
+		
+		batteryUpdate();
+		usartInterpretCommand();
 		usartTransmitWriteBuffer();
 		
     }

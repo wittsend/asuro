@@ -9,6 +9,8 @@
 #include <avr/interrupt.h>
 #include "fifo.h"
 #include "usart.h"
+#include "adc.h"		//Comms
+#include "battery.h"	//Comms
 
 ///////////[Global variables]///////////////////////////////////////////////////////////////////////
 FifoBuffer usartRxFifo =
@@ -44,18 +46,23 @@ void usartInit(void)
 	
 	UBRRL
 	//=	1;				//250kbps @ 8.00MHz
+	//=	12;				//38.4kbps @ 8.00MHz
+	//=	51;				//9600bps @ 8.00MHz
+	//=	103;			//4800bps @ 8.00MHz
 	=	207;			//2400bps @ 8.00MHz
 
 }
 
-//Write a byte to the transmit buffer
+//Write multiple bytes to the transmit buffer
 //Return 0 on success, or 1 if buffer full.
-uint8_t usartBufferWrite(uint8_t byte)
+uint8_t usartBufferWrite(uint8_t *bytes, uint8_t numOfBytes)
 {
-	if(fifoPut(&usartTxFifo, byte))
-		return 1;
-	else
-		return 0;
+	for(uint8_t i = 0; i < numOfBytes; i++)
+	{
+		if(fifoPut(&usartTxFifo, bytes[i]))
+			return 1;
+	}
+	return 0;
 }
 
 //Read a byte from the receive buffer
@@ -77,6 +84,7 @@ uint8_t usartTransmitWriteBuffer(void)
 	
 	while(!fifoEmpty)	//If theres more data to send
 	{
+		usartDisableRx;
 		fifoEmpty = fifoGet(&usartTxFifo, &fetchedByte);
 		if(!fifoEmpty) 
 		{
@@ -84,6 +92,9 @@ uint8_t usartTransmitWriteBuffer(void)
 			bytesSent++;
 		}
 	}
+	
+	while(!usartTxComp);
+	usartEnableRx;
 	return bytesSent;
 }
 
@@ -106,6 +117,77 @@ uint8_t usartTransmit(uint8_t byte)
 	while(!usartDataRegEmpty);				//Wait for UDR register to empty
 	usartTxReg = byte;						//Load byte into UDR
 	return 0;
+}
+
+//Will read next command in the FIFO and act upon it. Will be moved to a comms module eventually
+void usartInterpretCommand(void)
+{
+	const uint8_t dataBufferSz = 4;
+	UsartCommands command;
+	uint8_t dataBuffer[dataBufferSz];
+	uint8_t numOfBytes = 0;
+	
+	if(!usartBufferRead(&command))	//If command found
+	{
+		switch(command)
+		{
+			case USART_SEND_TXCHECK_CMD:
+				dataBuffer[0] = USART_SEND_TXCHECK_CMD;
+				numOfBytes = 1;
+				break;
+				
+			case USART_SEND_ADC0_CMD:
+				dataBuffer[0] = USART_SEND_ADC0_CMD;
+				dataBuffer[1] = ((adcGetData(0x00)>>8) & 0xFF);
+				dataBuffer[2] = ((adcGetData(0x00)>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+				
+			case USART_SEND_ADC1_CMD:
+				dataBuffer[0] = USART_SEND_ADC1_CMD;
+				dataBuffer[1] = ((adcGetData(0x01)>>8) & 0xFF);
+				dataBuffer[2] = ((adcGetData(0x01)>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+				
+			case USART_SEND_ADC2_CMD:
+				dataBuffer[0] = USART_SEND_ADC2_CMD;
+				dataBuffer[1] = ((adcGetData(0x02)>>8) & 0xFF);
+				dataBuffer[2] = ((adcGetData(0x02)>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+				
+			case USART_SEND_ADC3_CMD:
+				dataBuffer[0] = USART_SEND_ADC3_CMD;
+				dataBuffer[1] = ((adcGetData(0x03)>>8) & 0xFF);
+				dataBuffer[2] = ((adcGetData(0x03)>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+				
+			case USART_SEND_ADC4_CMD:
+				dataBuffer[0] = USART_SEND_ADC4_CMD;
+				dataBuffer[1] = ((adcGetData(0x04)>>8) & 0xFF);
+				dataBuffer[2] = ((adcGetData(0x04)>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+				
+			case USART_SEND_ADC5_CMD:
+				dataBuffer[0] = USART_SEND_ADC5_CMD;
+				dataBuffer[1] = ((adcGetData(0x05)>>8) & 0xFF);
+				dataBuffer[2] = ((adcGetData(0x05)>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+				
+			case USART_SEND_BATTVOL_CMD:
+				dataBuffer[0] = USART_SEND_BATTVOL_CMD;
+				dataBuffer[1] = ((batteryGetVoltage()>>8) & 0xFF);
+				dataBuffer[2] = ((batteryGetVoltage()>>0) & 0xFF);
+				numOfBytes = 3;
+				break;
+			
+		}
+		usartBufferWrite(dataBuffer, numOfBytes);
+	}
 }
 
 //UART Receive complete interrupt

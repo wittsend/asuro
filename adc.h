@@ -49,6 +49,9 @@
 #define adcEnableInterrupt		(ADCSRA |= (1<<ADIE))
 //#define adcNewDataFlag			(~((ADCSRA & (1<<ADIF))>>ADIF) & 0x01)
 
+#define ADC_ENABLE				1
+#define ADC_DISABLE				0
+
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
 //Sets up the analogue to digital hardware
 void adcInit(void);
@@ -59,5 +62,7 @@ uint8_t adcNewData(uint8_t channel);
 //Will return the data last sampled from the given ADC channel
 uint16_t adcGetData(uint8_t channel);
 
+//Enable or disable an ADC channel
+void adcEnableChannel(uint8_t channel, uint8_t action);
 
 #endif /* ADC_H_ */

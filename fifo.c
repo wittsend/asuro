@@ -27,7 +27,7 @@ uint8_t fifoPut(FifoBuffer *x, uint8_t new)
 	return 0; // No errors
 }
 
-//Fetch the next element from the FIFO
+//Fetch the next element from the FIFO. Returns 0 on success, 1 if FIFO empty
 uint8_t fifoGet(FifoBuffer *x, uint8_t *old)
 {
 	if(x->fifoIn == x->fifoOut)

@@ -12,9 +12,9 @@
 
 //////////////[Global variables]////////////////////////////////////////////////////////////////////
 volatile uint8_t adcCurrentChannel;
-volatile uint8_t adcNewDataFlag = 0;		//Each bit represents if there is new data on said
+volatile uint8_t adcNewDataFlag = 0x00;		//Each bit represents if there is new data on said
 											//adc channel
-volatile uint8_t adcEnabledChannels = 0x1F;	//What ADC channels are enabled for sampling
+volatile uint8_t adcEnabledChannels = 0x3F;	//What ADC channels are enabled for sampling
 volatile uint16_t adcData[ADC_CHANNELS];	//Stores data from each ADC channel
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
@@ -52,6 +52,15 @@ uint16_t adcGetData(uint8_t channel)
 	if(channel >= ADC_CHANNELS)
 		return 0;
 	return adcData[channel];
+}
+
+//Enable or disable an ADC channel
+void adcEnableChannel(uint8_t channel, uint8_t action)
+{
+	if(action == ADC_ENABLE)
+		adcEnabledChannels |= (1<<channel);
+	else
+		adcEnabledChannels &= ~(1<<channel);
 }
 
 //ADC conversion complete interrupt

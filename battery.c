@@ -14,11 +14,11 @@
 BatteryData battery = 
 {
 	.adcChannel			= ADC_BATTERY_CH,
-	.conversionFactor	= 1
+	.conversionFactor	= 11.891503267973
 };
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
-uint8_t updateBattery(void)
+uint8_t batteryUpdate(void)
 {
 	if(adcNewData(ADC_BATTERY_CH))
 	{
@@ -29,7 +29,7 @@ uint8_t updateBattery(void)
 		return 1;
 }
 
-uint16_t getBatteryVoltage(void)
+uint16_t batteryGetVoltage(void)
 {
 	return battery.voltage;
 }

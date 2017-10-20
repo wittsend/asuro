@@ -19,7 +19,7 @@ typedef struct BatteryData
 } BatteryData;
 
 /////////////[Functions]////////////////////////////////////////////////////////////////////////////
-uint8_t updateBattery(void);
-uint16_t getBatteryVoltage(void);
+uint8_t batteryUpdate(void);
+uint16_t batteryGetVoltage(void);
 
 #endif /* BATTERY_H_ */
