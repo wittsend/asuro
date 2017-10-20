@@ -17,11 +17,15 @@
 #define usartRxReg				UDR
 #define usartDataRegEmpty		(UCSRA & (1<<UDRE))
 #define usartTxComp				(UCSRA & (1<<TXC))
+#define usartClearTxComp		(UCSRA |= (1<<TXC))
 #define usartEnableRx			(UCSRB |= (1<<RXEN))
 #define usartDisableRx			(UCSRB &= ~(1<<RXEN))
 #define usartEnableTx			(UCSRB |= (1<<TXEN))
 #define usartDisableTx			(UCSRB &= ~(1<<TXEN))
-
+#define usartEnableRxInt		(UCSRB |= (1<<RXCIE))
+#define usartDisableRxInt		(UCSRB &= ~(1<<RXCIE))
+#define usartEnableTxInt		(UCSRB |= (1<<TXCIE))
+#define usartDisableTxInt		(UCSRB &= ~(1<<TXCIE))
 
 ///////////[Type Definitions]///////////////////////////////////////////////////////////////////////
 ////UART Commands

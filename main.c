@@ -17,6 +17,7 @@ int main(void)
 {
 	char debugString[32];
 	setup();
+	
     while (1) 
     {
 		if(0)

@@ -32,25 +32,25 @@ FifoBuffer usartTxFifo =
 ///////////[Functions]//////////////////////////////////////////////////////////////////////////////
 void usartInit(void)
 {
-	UCSRA
-	=	0x00;
-	
-	UCSRB
-	=	(1<<RXCIE)
-	|	(1<<RXEN)
-	|	(1<<TXEN);
-	
-	UCSRC
-	=	(1<<URSEL)		//Allow writing to UCSRC instead of UBRRH
-	|	(3<<UCSZ0);		//8-bit, 1 stop bit
-	
 	UBRRL
 	//=	1;				//250kbps @ 8.00MHz
 	//=	12;				//38.4kbps @ 8.00MHz
 	//=	51;				//9600bps @ 8.00MHz
 	//=	103;			//4800bps @ 8.00MHz
 	=	207;			//2400bps @ 8.00MHz
+	
+	UCSRB
+	=	(1<<RXCIE);		//Enable receive complete interrupt
+	
+	UCSRC
+	=	(1<<URSEL)		//Allow writing to UCSRC instead of UBRRH
+	|	(3<<UCSZ0);		//8-bit, 1 stop bit
+	
 
+
+	usartEnableRx;
+	usartEnableTx;
+	usartTransmit(0xFF);//Send something to reset TX complete
 }
 
 //Write multiple bytes to the transmit buffer
@@ -82,19 +82,16 @@ uint8_t usartTransmitWriteBuffer(void)
 	uint8_t fifoEmpty = 0;
 	uint8_t fetchedByte = 0;
 	
-	while(!fifoEmpty)	//If theres more data to send
+	do	//If theres more data to send
 	{
-		usartDisableRx;
 		fifoEmpty = fifoGet(&usartTxFifo, &fetchedByte);
 		if(!fifoEmpty) 
 		{
 			usartTransmit(fetchedByte);
 			bytesSent++;
 		}
-	}
+	} while(!fifoEmpty);
 	
-	while(!usartTxComp);
-	usartEnableRx;
 	return bytesSent;
 }
 
@@ -115,6 +112,7 @@ uint8_t usartWriteString(char *string)
 uint8_t usartTransmit(uint8_t byte)
 {
 	while(!usartDataRegEmpty);				//Wait for UDR register to empty
+	usartClearTxComp;
 	usartTxReg = byte;						//Load byte into UDR
 	return 0;
 }
@@ -194,6 +192,9 @@ void usartInterpretCommand(void)
 ISR(USART_RXC_vect)
 {
 	//Load into the FIFO
-	fifoPut(&usartRxFifo, usartRxReg);
+	if(usartTxComp)
+		fifoPut(&usartRxFifo, usartRxReg);
+	else
+		usartRxReg;
 }
 
