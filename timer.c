@@ -38,7 +38,7 @@ void timerDelayMs(uint16_t timeMs)
 }
 
 //Return the systemTimestamp
-uint32_t timerGetTimestamp(void)
+inline uint32_t timerGetTimestamp(void)
 {
 	return systemTimestamp;
 }

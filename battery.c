@@ -25,6 +25,7 @@ uint8_t batteryUpdate(void)
 {
 	if(timerGetTimestamp() > (battery.lastPollTime + battery.pollInterval))
 	{
+		battery.lastPollTime = timerGetTimestamp();
 		if(adcNewData(ADC_BATTERY))
 		{
 			battery.rawData = adcGetData(battery.adcChannel);

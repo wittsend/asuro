@@ -32,10 +32,11 @@ typedef struct OdometerData
 	OdometerState	curState;		//Current state of sensor (high/low)
 	OdometerState	prevState;		//Previous state of sensor (high/low)
 	uint32_t		counts;			//Number of rising edges since last poll
+	uint16_t		dCounts;		//Counts at last poll (sum to track distance)
 	uint16_t		pollInterval;	//Time between rising edge reads
 	uint32_t		lastPollTime;	//Time at which sensor was last polled.
-	uint16_t		encStepsConv;	//Conv coeff. = (1000ms per sec)/(30 enc steps per wheel rev)
-	uint16_t		rps;			//Revolutions per second
+	uint16_t		encStepsConv;	//Conv coeff. = (60000ms per min)/(30 enc steps per wheel rev)
+	uint16_t		rpm;			//Revolutions per minute
 } OdometerData;
 
 ///////////[Global Variables]///////////////////////////////////////////////////////////////////////

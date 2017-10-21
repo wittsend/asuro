@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <avr/io.h>
-#include <stdio.h>		//sprintf
+#include <stdio.h>		//printf
 
 #include "setup.h"
 #include "usart.h"
@@ -16,23 +16,33 @@
 #include "battery.h"
 #include "motor.h"
 
+#if defined DEBUG
+//Make printf work
+static int uart_putchar(char c, FILE *stream);
+static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+#endif
 
 int main(void)
 {
-	char debugString[32];
+#if defined DEBUG
+	stdout = &mystdout; //Required for printf init
 	uint32_t lastPollTime = 0;
+#endif
+
 	setup();
-	
-	motorLeftDrive(-128);
 	
     while (1) 
     {
-		if(timerGetTimestamp() > lastPollTime + 1000)
+#if defined DEBUG
+		if(timerGetTimestamp() >= lastPollTime + 1000)
 		{
 			lastPollTime = timerGetTimestamp();
-			sprintf(debugString, "%4i\r\n", odoLeft.rps);
-			usartWriteString(debugString);
+			printf("odo:%4i\n\r", odoLeft.rpm);
+			//usartWriteString(debugString);
 		}
+#endif
+		
+		motorLeftDriveSpeed(100);
 		
 		batteryUpdate();
 		odoPollAllSensors();
@@ -42,3 +52,15 @@ int main(void)
     }
 }
 
+#if defined DEBUG
+//Used for printing characters to UART with printf
+static int uart_putchar(char c, FILE *stream)
+{
+	if (c == '\n') uart_putchar('\r', stream);
+	
+	//usartTransmit(c);
+	usartBufferWrite(&c, 1);
+	
+	return 0;
+}
+#endif

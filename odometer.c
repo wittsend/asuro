@@ -31,8 +31,8 @@ void odoObjectBuild(OdometerData *x, AdcChannels adcChannel)
 	x->hysteresis	= 128;
 	x->pollInterval	= 250;
 	x->lastPollTime	= 0;
-	x->encStepsConv = 33;
-	x->rps			= 0;
+	x->encStepsConv = 2000;
+	x->rpm			= 0;
 	x->counts		= 0;
 	x->curState		= ODO_LOW;
 	x->prevState	= ODO_LOW;
@@ -84,14 +84,16 @@ uint8_t odoUpdateSensor(OdometerData *x)
 	uint32_t timestamp = timerGetTimestamp();
 	if(timestamp > (x->lastPollTime + x->pollInterval))
 	{
-		x->rps = (x->counts*x->encStepsConv)/(timestamp - x->lastPollTime);
+		x->rpm = (x->counts*x->encStepsConv)/(timestamp - x->lastPollTime);
+		x->dCounts = x->counts;
 		x->counts = 0;
+		x->lastPollTime = timestamp;
 	}
 	return 0;
 }
 
 //Will poll all odometer sensors for new data
-void odoPollAllSensors(void)
+inline void odoPollAllSensors(void)
 {
 	odoUpdateSensor(&odoLeft);
 	odoUpdateSensor(&odoRight);

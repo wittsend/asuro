@@ -6,8 +6,11 @@
  */ 
 
 ///////////[Includes]///////////////////////////////////////////////////////////////////////////////
+#include "setup.h"
 #include <stdlib.h>		//abs()
 #include <avr/io.h>
+//#include <stdio.h>		//printf
+#include "usart.h"			//debug
 #include "odometer.h"
 #include "motor.h"
 
@@ -23,19 +26,24 @@
 #define motorLeftPWM	OCR1A
 #define motorRightPWM	OCR1B
 
+#define MD_KP			0.1
+#define MD_KI			1
+
 ///////////[Global Variables]///////////////////////////////////////////////////////////////////////
 MotorData motorLeft =
 {
-	.speedOut	= 0,
+	.speedRpm	= 0,
 	.minSpeed	= 0,
-	.speedIn	= &(odoLeft.rps)
+	.speedIn	= &(odoLeft.rpm),
+	.kP			= 1
 };
 
 MotorData motorRight =
 {
-	.speedOut	= 0,
+	.speedRpm	= 0,
 	.minSpeed	= 0,
-	.speedIn	= &(odoRight.rps)
+	.speedIn	= &(odoRight.rpm),
+	.kP			= 1
 };
 
 ///////////[Functions]//////////////////////////////////////////////////////////////////////////////
@@ -66,6 +74,7 @@ void motorInit(void)
 	=	(1 << CS11);
 }
 
+//Drive the left motor at a given speed (-255 to 255) negative makes motor go backwards
 void motorLeftDrive(int16_t speed)
 {
 	if(speed < 0)
@@ -78,6 +87,7 @@ void motorLeftDrive(int16_t speed)
 	motorLeftPWM = abs(speed);
 }
 
+//Drive the Right motor at a given speed (-255 to 255) negative makes motor go backwards
 void motorRightDrive(int16_t speed)
 {
 	if(speed < 0)
@@ -88,4 +98,94 @@ void motorRightDrive(int16_t speed)
 		motorRightStop;
 	
 	motorRightPWM = abs(speed);
+}
+
+//Drive the robot with the given amount of turn ratio. (0 = straight, -255 = rotate anti clockwise
+//on the spot and 255 = clockwise on the spot. Anything in between is a mixture)
+void steerRobot(int16_t speed, int16_t turnRatio)
+{
+	int16_t leftMotorSpeed, rightMotorSpeed;
+	
+	//If speed is set to 0, then save processor cycles
+	if(speed == 0.0)
+	{
+		motorRightStop;
+		motorLeftStop;
+		return;
+	}
+		
+	//Make sure parameters are in range and correct if necessary
+	speed = capToRangeInt(speed, -255, 255);
+	turnRatio = capToRangeInt(turnRatio, -255, 255);
+		
+	//Calculate speed ratios
+	float rotationalSpeed = speed*(turnRatio/255.0);
+	float straightSpeed = abs(speed)-(abs(rotationalSpeed));
+		
+	leftMotorSpeed = (int16_t)(straightSpeed + rotationalSpeed);
+	rightMotorSpeed = (int16_t)(straightSpeed - rotationalSpeed);
+	
+	//Apply speeds and directions to motors
+	motorLeftDrive(leftMotorSpeed);
+	motorRightDrive(rightMotorSpeed);
+}
+
+//Drive the motor at the given speed with closed loop control. Speed in RPMs. returns error value
+int16_t motorLeftDriveSpeed(int16_t speedRPM)
+{
+	int16_t pErr = 0;
+	static int16_t iErr = 0;
+	int16_t motorSpeed = 0;
+	
+	speedRPM = capToRangeInt(speedRPM, -200, 200);
+	
+	//.rpm is always positive, so correct for desired direction
+	if(speedRPM > 0)
+	pErr = speedRPM - odoLeft.rpm;
+	if(speedRPM < 0)
+	pErr = speedRPM + odoLeft.rpm;
+	
+	iErr += pErr;
+	
+	iErr = capToRangeInt(iErr, -255, 255);
+	
+	motorSpeed = MD_KP*pErr + MD_KI*iErr;
+	
+	motorSpeed = capToRangeInt(motorSpeed, -255, 255);
+	
+	//printf("mspeed:%4i\n\r", motorSpeed);
+	usartBufferWrite(&iErr, 2);
+	usartBufferWrite(255, 1);
+	usartBufferWrite(&pErr, 2);
+	usartBufferWrite(255, 1);
+	
+	motorLeftDrive(motorSpeed);
+	
+	return pErr;
+}
+
+//Drive the motor at the given speed with closed loop control. Speed in RPMs. returns error value
+int16_t motorRightDriveSpeed(int16_t speedRPM)
+{
+	int16_t pErr = 0;
+	static int16_t iErr = 0;
+	int16_t motorSpeed = 0;
+	
+	speedRPM = capToRangeInt(speedRPM, -200, 200);
+	
+	//.rpm is always positive, so correct for desired direction
+	if(speedRPM > 0)
+		pErr = speedRPM - odoRight.rpm;
+	if(speedRPM < 0)
+		pErr = speedRPM + odoRight.rpm;
+	
+	iErr += pErr;
+	
+	motorSpeed = MD_KP*pErr + MD_KI*iErr;
+	
+	motorSpeed = capToRangeInt(motorSpeed, -255, 255);
+	
+	motorRightDrive(motorSpeed);
+	
+	return pErr;
 }
