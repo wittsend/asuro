@@ -42,7 +42,8 @@ int main(void)
 		}
 #endif
 		
-		motorLeftDriveSpeed(100);
+		motorLeftDriveSpeed(60);
+		motorRightDriveSpeed(60);
 		
 		batteryUpdate();
 		odoPollAllSensors();

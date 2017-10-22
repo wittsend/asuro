@@ -31,7 +31,7 @@ void odoObjectBuild(OdometerData *x, AdcChannels adcChannel)
 	x->hysteresis	= 128;
 	x->pollInterval	= 250;
 	x->lastPollTime	= 0;
-	x->encStepsConv = 2000;
+	x->encStepsConv = 1000;
 	x->rpm			= 0;
 	x->counts		= 0;
 	x->curState		= ODO_LOW;
@@ -75,8 +75,8 @@ uint8_t odoUpdateSensor(OdometerData *x)
 		if(x->rawData < (x->midValue - x->hysteresis))
 			x->curState = ODO_LOW;
 		
-		//Increment the counts if rising edge detected
-		if(x->curState == ODO_HIGH && x->prevState == ODO_LOW)
+		//Increment the counts if rising edge or falling edge detected
+		if(x->curState != x->prevState)
 			x->counts++;
 	}
 	

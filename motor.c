@@ -11,6 +11,7 @@
 #include <avr/io.h>
 //#include <stdio.h>		//printf
 #include "usart.h"			//debug
+#include "timer.h"
 #include "odometer.h"
 #include "motor.h"
 
@@ -26,8 +27,9 @@
 #define motorLeftPWM	OCR1A
 #define motorRightPWM	OCR1B
 
-#define MD_KP			0.1
-#define MD_KI			1
+#define MD_KP			1.5
+#define MD_KI			0.2
+#define MD_KD			0.1
 
 ///////////[Global Variables]///////////////////////////////////////////////////////////////////////
 MotorData motorLeft =
@@ -133,59 +135,73 @@ void steerRobot(int16_t speed, int16_t turnRatio)
 //Drive the motor at the given speed with closed loop control. Speed in RPMs. returns error value
 int16_t motorLeftDriveSpeed(int16_t speedRPM)
 {
-	int16_t pErr = 0;
+	static uint32_t nextPollTime = 0;
+	static int16_t pErr = 0;
 	static int16_t iErr = 0;
+	static int16_t pErrOld = 0;
 	int16_t motorSpeed = 0;
 	
-	speedRPM = capToRangeInt(speedRPM, -200, 200);
+	if(timerGetTimestamp() > nextPollTime)
+	{
+		nextPollTime = timerGetTimestamp() + odoLeft.pollInterval;
+		speedRPM = capToRangeInt(speedRPM, -200, 200);
+		
+		pErrOld = pErr;
+		
+		//.rpm is always positive, so correct for desired direction
+		if(speedRPM > 0)
+			pErr = speedRPM - odoLeft.rpm;
+		if(speedRPM < 0)
+			pErr = speedRPM + odoLeft.rpm;
 	
-	//.rpm is always positive, so correct for desired direction
-	if(speedRPM > 0)
-	pErr = speedRPM - odoLeft.rpm;
-	if(speedRPM < 0)
-	pErr = speedRPM + odoLeft.rpm;
+		iErr += pErr;
 	
-	iErr += pErr;
+		iErr = capToRangeInt(iErr, -255, 255);
 	
-	iErr = capToRangeInt(iErr, -255, 255);
+		motorSpeed = MD_KP*pErr + MD_KI*iErr + MD_KD*(pErr - pErrOld);
 	
-	motorSpeed = MD_KP*pErr + MD_KI*iErr;
+		motorSpeed = capToRangeInt(motorSpeed, -255, 255);
 	
-	motorSpeed = capToRangeInt(motorSpeed, -255, 255);
+		motorLeftDrive(motorSpeed);
 	
-	//printf("mspeed:%4i\n\r", motorSpeed);
-	usartBufferWrite(&iErr, 2);
-	usartBufferWrite(255, 1);
-	usartBufferWrite(&pErr, 2);
-	usartBufferWrite(255, 1);
-	
-	motorLeftDrive(motorSpeed);
-	
-	return pErr;
+		return pErr;
+	}
+	return 0;
 }
 
 //Drive the motor at the given speed with closed loop control. Speed in RPMs. returns error value
 int16_t motorRightDriveSpeed(int16_t speedRPM)
 {
-	int16_t pErr = 0;
-	static int16_t iErr = 0;
+	static uint32_t nextPollTime = 0;
+	static float pErr = 0;
+	static float iErr = 0;
+	static float pErrOld = 0;
 	int16_t motorSpeed = 0;
 	
-	speedRPM = capToRangeInt(speedRPM, -200, 200);
-	
-	//.rpm is always positive, so correct for desired direction
-	if(speedRPM > 0)
+	if(timerGetTimestamp() > nextPollTime)
+	{
+		nextPollTime = timerGetTimestamp() + odoRight.pollInterval;
+		speedRPM = capToRangeInt(speedRPM, -200, 200);
+		
+		pErrOld = pErr;
+		
+		//.rpm is always positive, so correct for desired direction
+		if(speedRPM > 0)
 		pErr = speedRPM - odoRight.rpm;
-	if(speedRPM < 0)
+		if(speedRPM < 0)
 		pErr = speedRPM + odoRight.rpm;
-	
-	iErr += pErr;
-	
-	motorSpeed = MD_KP*pErr + MD_KI*iErr;
-	
-	motorSpeed = capToRangeInt(motorSpeed, -255, 255);
-	
-	motorRightDrive(motorSpeed);
-	
-	return pErr;
+		
+		iErr += pErr;
+		
+		iErr = capToRangeInt(iErr, -255, 255);
+		
+		motorSpeed = MD_KP*pErr + MD_KI*iErr + MD_KD*(pErr - pErrOld);
+		
+		motorSpeed = capToRangeInt(motorSpeed, -255, 255);
+		
+		motorRightDrive(motorSpeed);
+		
+		return pErr;
+	}
+	return 0;
 }
